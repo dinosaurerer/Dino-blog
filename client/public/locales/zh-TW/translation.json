@@ -99,7 +99,7 @@
       "rejected": "拒絕",
       "waiting": "待審核"
     },
-    "title": "朋友們"
+    "title": "室友們"
   },
   "github_login": "Github 登入",
   "hashtags": "標籤",
@@ -187,7 +187,7 @@
         "title": "友情連結申請"
       },
       "health": {
-        "desc": "啟用朋友們連結可訪問性檢查",
+        "desc": "啟用朋友連結可訪問性檢查",
         "title": "友情連結健康監測",
         "ua": {
           "desc": "設定友情連結可訪問性檢查時使用的 User-Agent, 預設 'Rin-Check/1.0'",
