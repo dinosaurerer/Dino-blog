@@ -2,28 +2,47 @@ import {useEffect, useRef, useState} from "react"
 import {Helmet} from 'react-helmet'
 import {Link} from "wouter"
 import {Waiting} from "../components/loading"
-import {client} from "../main"
-import {headersWithAuth} from "../utils/auth"
+import { client } from "../app/runtime"
+import {useSiteConfig} from "../hooks/useSiteConfig";
 import {siteName} from "../utils/constants"
 import {useTranslation} from "react-i18next";
 
+interface FeedItem {
+    id: number;
+    createdAt: Date;
+    title: string | null;
+}
 
 export function TimelinePage() {
-    const [feeds, setFeeds] = useState<Partial<Record<number, { id: number; title: string | null; createdAt: Date; }[]>>>()
+    const [feeds, setFeeds] = useState<Partial<Record<number, FeedItem[]>>>()
     const [length, setLength] = useState(0)
     const ref = useRef(false)
     const { t } = useTranslation()
+    const siteConfig = useSiteConfig();
     function fetchFeeds() {
-        client.feed.timeline.get({
-            headers: headersWithAuth()
-        }).then(({ data }) => {
-            if (data && typeof data !== 'string') {
-                setLength(data.length)
-                const groups = Object.groupBy(data, ({ createdAt }) => new Date(createdAt).getFullYear())
-                setFeeds(groups)
+        client.feed.timeline()
+        .then(({ data }) => {
+            if (data) {
+                const arr = Array.isArray(data) ? data : []
+                setLength(arr.length)
+                // 兼容的分组逻辑
+                const groups = (Object.groupBy
+                    ? Object.groupBy(arr, ({ createdAt }) => new Date(createdAt).getFullYear())
+                    : arr.reduce<Record<number, any[]>>((acc, item) => {
+                        const key = new Date(item.createdAt).getFullYear()
+                        ;(acc[key] ||= []).push(item)
+                        return acc
+                    }, {})
+                )
+
+                setFeeds(groups as any)
             }
         })
+        .catch(err => {
+            console.error("fetchFeeds error:", err)
+        })
     }
+
     useEffect(() => {
         if (ref.current) return
         fetchFeeds()
@@ -32,10 +51,10 @@ export function TimelinePage() {
     return (
         <>
             <Helmet>
-                <title>{`${t('timeline')} - ${process.env.NAME}`}</title>
+                <title>{`${t('timeline')} - ${siteConfig.name}`}</title>
                 <meta property="og:site_name" content={siteName} />
                 <meta property="og:title" content={t('timeline')} />
-                <meta property="og:image" content={process.env.AVATAR} />
+                <meta property="og:image" content={siteConfig.avatar} />
                 <meta property="og:type" content="article" />
                 <meta property="og:url" content={document.URL} />
             </Helmet>

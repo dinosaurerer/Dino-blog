@@ -4,11 +4,13 @@ dist/**
 .turbo
 *.db
 .env
+.secrets
 test.ts
 *.log
 .env.production
 .wrangler
 wrangler.toml
+.vite
 # Logs
 logs
 npm-debug.log*
@@ -33,3 +35,6 @@ dist-ssr
 *.sln
 *.sw?
 /.dev.vars
+
+# Bun
+.bun/*
